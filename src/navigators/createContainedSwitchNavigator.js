@@ -3,7 +3,7 @@ import createSwitchNavigator from './createSwitchNavigator';
 
 const SwitchNavigator = (routeConfigs, config = {}) => {
   const navigator = createSwitchNavigator(routeConfigs, config);
-  return createNavigationContainer(navigator);
+  return createNavigationContainer(navigator, config);
 };
 
 export default SwitchNavigator;
