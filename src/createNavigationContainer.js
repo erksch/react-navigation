@@ -56,7 +56,7 @@ let _reactNavigationIsHydratingState = false;
  * This allows to use e.g. the StackNavigator and TabNavigator as root-level
  * components.
  */
-export default function createNavigationContainer(Component) {
+export default function createNavigationContainer(Component, config = {}) {
   class NavigationContainer extends React.Component {
     subs = null;
 
@@ -130,7 +130,10 @@ export default function createNavigationContainer(Component) {
     }
 
     _handleOpenURL = ({ url }) => {
-      const { enableURLHandling, uriPrefix } = this.props;
+      let { enableURLHandling, uriPrefix } = this.props;
+      enableURLHandling = enableURLHandling || config.enableURLHandling;
+      uriPrefix = uriPrefix || config.uriPrefix;
+
       if (enableURLHandling === false) {
         return;
       }
@@ -182,9 +185,6 @@ export default function createNavigationContainer(Component) {
 
     async componentDidMount() {
       this._isMounted = true;
-      if (!this._isStateful()) {
-        return;
-      }
 
       if (__DEV__ && !this.props.detached) {
         if (_statefulContainerCount > 0) {
@@ -203,7 +203,12 @@ export default function createNavigationContainer(Component) {
       Linking.addEventListener('url', this._handleOpenURL);
 
       // Pull out anything that can impact state
-      const { persistenceKey, uriPrefix, enableURLHandling } = this.props;
+      let { persistenceKey, uriPrefix, enableURLHandling } = this.props;
+
+      enableURLHandling = enableURLHandling || config.enableURLHandling;
+      uriPrefix = uriPrefix || config.uriPrefix;
+      persistenceKey = persistenceKey || config.persistenceKey;
+
       let parsedUrl = null;
       let startupStateJSON = null;
       if (enableURLHandling !== false) {
@@ -240,6 +245,8 @@ export default function createNavigationContainer(Component) {
           params
         );
         if (urlAction) {
+          // hacky but does not work without
+          this.props.navigation.dispatch(urlAction);
           !!process.env.REACT_NAV_LOGGING &&
             console.log('Applying Navigation Action for Initial URL:', url);
           action = urlAction;
